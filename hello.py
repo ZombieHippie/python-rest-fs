@@ -3,25 +3,37 @@ import os, time
 
 app = Flask(__name__)
 
-# GET File or Folder
+# GET interface
 @app.route('/', methods=['GET'])
 def index():
+  return '<script src="/script"></script>'
+
+
+# GET script file
+@app.route('/script', methods=['GET'])
+def script():
+  file = open('script.js', 'r')
+  scriptFile = file.read()
+  file.close()
+  return scriptFile
+
+# GET File or Folder
+@app.route('/rest', methods=['GET'])
+def rest():
   try:
     reqpath = request.args['path']
-  except AttributeError:
-    reqpath = 'friends and date of birth.csv'
+  except:
+    reqpath = './'
   try:
     (mode, ino, dev, nlink, uid, gid, size, atime, mtime, ctime) = os.stat(reqpath)
   except OSError:
     return jsonify({'error':'Improper path'})
-  reqargsdict = request.args
-  infodict = {
+  res = {
     "name": reqpath,
     "created": ctime,
     "modified": mtime,
     "size": size
   }
-  res = dict(list(reqargsdict.items()) + list(infodict.items()))
   # Was having problems running stats on open file, so we separate the two
   # win mode or linux mode
   if mode == 16895 or mode == 16877:
